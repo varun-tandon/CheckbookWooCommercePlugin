@@ -10,7 +10,7 @@ Text Domain: checkbook-io
 Domain Path: /languages
 */
 //One page 1
-global $wp;
+
 defined( 'ABSPATH' ) or exit;
 
 
@@ -34,33 +34,43 @@ function wc_checkbookio_add_to_gateways( $gateways ) {
 add_filter( 'woocommerce_payment_gateways', 'wc_checkbookio_add_to_gateways' );
 
 
+
+/**
+ * Ensure that the session has started
+ */
 function sess_start() {
     if (!session_id())
     session_start();
-
-
 
 }
 
 add_action('init','sess_start', 1);
 
-add_action('wp_enqueue_scripts','tingle_init');
 
-function tingle_init() {
-    wp_enqueue_script( 'tingle-js', plugins_url( 'tingle.js', __FILE__ ));
+
+
+/**
+ * Initialize the tingle.js file (for the modal)
+ */
+function tingle_js_init() {
+    wp_enqueue_script( 'tingle-js', plugins_url( 'js/tingle.js', __FILE__ ));
 }
+add_action('wp_enqueue_scripts','tingle_js_init');
 
 
-function wpse_load_plugin_css() {
+/**
+ * Initialize the tingle.css file (for the modal)
+ */
+function tingle_css_init() {
     $plugin_url = plugin_dir_url(__FILE__ );
 
-    wp_enqueue_style( 'style1', $plugin_url . 'tingle.css' );
+    wp_enqueue_style( 'style1', $plugin_url . 'css/tingle.css' );
 }
-add_action( 'wp_enqueue_scripts', 'wpse_load_plugin_css' );
+add_action( 'wp_enqueue_scripts', 'tingle_css_init' );
 
 
 
-session_write_close();
+
 /**
  * Adds plugin page links
  * 
@@ -267,8 +277,8 @@ function wc_checkbookio_gateway_init() {
       $_SESSION['oauth_url'] = $oauth_url;
 			// $oauth_url = "https://sandbox.checkbook.io/oauth/authorize?client_id=" . $this->clientID . '&response_type=code&scope=check&redirect_uri='. 'http://127.0.0.1:8888/wordpress/checkout/';
 			?>
-			<link rel="stylesheet" href= <?php '"'. plugins_url( 'tingle.css', __FILE__ ) .'"'?> >
-			<script src=<?php '"'. plugins_url( 'tingle.js', __FILE__ ) .'"'?>></script>
+			<link rel="stylesheet" href= <?php '"'. plugins_url( 'css/tingle.css', __FILE__ ) .'"'?> >
+			<script src=<?php '"'. plugins_url( 'js/tingle.js', __FILE__ ) .'"'?>></script>
 				<div id="txtHint">
 			<?php 
 				if($_SESSION['authorized'] == "true"){
