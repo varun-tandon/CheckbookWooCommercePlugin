@@ -232,7 +232,8 @@ function wc_checkbookio_gateway_init() {
 		/**
 		 * Create the UI for the payment fields. In this case the only payment field is the button to authenticate.
 		 */
-		public function payment_fields(){
+		public function payment_fields()
+		{
 			$oauth_url = $this->baseURL . "/oauth/authorize?client_id=" . $this->clientID . '&response_type=code&state=asdfasdfasd &scope=check&redirect_uri=' . get_site_url() . '/wp-content/plugins/checkbook-io-payment/callback.php';
       $_SESSION['oauth_url'] = $oauth_url;
 			?>
@@ -273,7 +274,7 @@ function wc_checkbookio_gateway_init() {
 			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 			<script src="https://unpkg.com/micromodal/dist/micromodal.min.js"></script>
 			<script>
-       var modal = new tingle.modal({
+      var modal = new tingle.modal({
 					    footer: false,
 					    stickyFooter: false,
 					    closeMethods: ['overlay', 'button', 'escape'],
@@ -293,21 +294,26 @@ function wc_checkbookio_gateway_init() {
 					    }
 					});
 
-					// set content
 			modal.setContent('<iframe id = "authIframe"src="'  +  <?php echo '"' . $oauth_url . '"'; ?> + '" scrolling="yes" ></iframe>');
 
 			function openCheckbookModal()
 			{
 					modal.open();
 			}
-			</script> <?php
+			</script>
+
+			<?php
 		}
 
-		public function validate_fields(){
-      if(!$_SESSION['authorized'] == "true"){
+		public function validate_fields()
+		{
+      if(!$_SESSION['authorized'] == "true")
+			{
         wc_add_notice(  'Please press "Pay with Checkbook" to authorize payments. ', 'error' );
         return false;
-      }else{
+      }
+			else
+			{
         return true;
       }
     }
@@ -321,42 +327,8 @@ function wc_checkbookio_gateway_init() {
 		public function process_payment( $order_id ) {
 			$order = wc_get_order( $order_id );
 
-			//$str = file_get_contents(getcwd(). '/wp-content/plugins/checkbook-io-payment/bearer.json');
-
-
-
-
-
-			// $request = new HttpRequest();
-			// $request->setUrl('https://sandbox.checkbook.io/v3/check/digital');
-			// $request->setMethod(HTTP_METH_POST);
-
-			// $request->setHeaders(array(
-			//   'Cache-Control' => 'no-cache',
-			//   'Content-Type' => 'application/json'
-			// ));
-
-			// $request->setBody('{
-			// 	"name":' . $this->checkRecipient . ',
-			// 	"recipient":' . $this->recipientEmail . ',
-			// 	"amount": '. $order['data']['total_tax'] .'
-			// }');
-
-			// try {
-			//   $response = $request->send();
-
-			//   echo $response->getBody();
-			// } catch (HttpException $ex) {
-			//   echo $ex;
-			//   error_log($ex);
-			//   return array(
-			// 	'result' 	=> 'failure',
-			// 	'redirect'	=> $this->get_return_url($order)
-			// );
-			// }
-
+			//Submit the POST of the digital check
 			$curl = curl_init();
-
 			curl_setopt_array($curl, array(
 			  CURLOPT_URL => $this->baseURL . "/v3/check/digital",
 			  CURLOPT_RETURNTRANSFER => true,
@@ -372,69 +344,34 @@ function wc_checkbookio_gateway_init() {
 			    "Content-Type: application/json",
 			  ),
 			));
-
 			$response = curl_exec($curl);
 			$err = curl_error($curl);
-
 			curl_close($curl);
-
-			if ($err) {
+			if ($err)
+			{
 			  error_log("cURL Error #:" . $err);
-			} else {
+			} else
+			{
+				 //Now that the post is complete...
 			   error_log($response);
-        //array_key_exists('id', json_decode($response, true))
-
-         if(array_key_exists('id', json_decode($response, true))){
-           // Mark as on-hold (we're awaiting the payment)
-			$order->update_status( 'complete', __( 'Order Complete.', 'wc-gateway-checkbookio' ) );
-
-
-			// Remove cart
-			WC()->cart->empty_cart();
-
-
-			// $oauth_url = "https://sandbox.checkbook.io/oauth/authorize?client-id=" . $this->clientID . '&response_type=code&scope=check&redirect_uri='. home_url( $wp->request );
-
-
-			// $oauth_url = "https://sandbox.checkbook.io/oauth/authorize?client_id=" . $this->clientID . '&response_type=code&scope=check&redirect_uri='. 'http://127.0.0.1:8888/wordpress/wp-content/plugins/checkbook-io-payment/callback.php';
-
+         if(array_key_exists('id', json_decode($response, true)))
+				 {
+					 	$order->update_status( 'complete', __( 'Order Complete.', 'wc-gateway-checkbookio' ) );
+						WC()->cart->empty_cart();
 			      session_destroy();
-
-			// Return thankyou redirect
-			return array(
-				'result' 	=> 'success',
-				'redirect'	=> $this->get_return_url($order)
-			);
-
-         }else{
-                   session_destroy();
-
-           wc_add_notice( __('Payment error: Something went wrong. Please refresh the page and try again. (Error: ' . json_decode($response, true)['error']. ')', 'checkbook') . $error_message, 'error' );
-           return;
-
+						return array(
+							'result' 	=> 'success',
+							'redirect'	=> $this->get_return_url($order)
+						);
          }
-
-
-
-
-
-
-
+				 else
+				 {
+					//There was an issue that resulted in the payment failing. Prevent the site from registering this as a compelted transaction.
+          session_destroy();
+          wc_add_notice( __('Payment error: Something went wrong. Please refresh the page and try again. (Error: ' . json_decode($response, true)['error']. ')', 'checkbook') . $error_message, 'error' );
+          return;
+         }
 			}
-
-
 		}
-
-
-  } // end \WC_Gateway_checkbookio class
-
-
-
-//   function debug_to_console( $data ) {
-//     $output = $data;
-//     if ( is_array( $output ) )
-//         $output = implode( ',', $output);
-
-//     echo "<script>console.log( 'Debug Objects: " . $output . "' );</script>";
-// }
+  }
 }
