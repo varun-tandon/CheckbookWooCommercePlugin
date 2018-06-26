@@ -199,7 +199,7 @@ function wc_checkbookio_gateway_init() {
 					'default' => 'yes'
 				),
 				'sandbox' => array(
-					'title'   => __( 'Enable/Disable', 'wc-gateway-checkbookio' ),
+					'title'   => __( 'Sandbox Mode', 'wc-gateway-checkbookio' ),
 					'type'    => 'checkbox',
 					'label'   => __( 'Use Checkbook in Sandbox mode', 'wc-gateway-checkbookio' ),
 					'default' => 'no'
