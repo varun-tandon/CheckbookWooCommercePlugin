@@ -246,7 +246,7 @@ function wc_checkbookio_gateway_init() {
 				}
 				else
 				{
-					echo ' <a id="authenticatecheckbook" href="javascript:test()"> Pay with Checkbook </a>';
+					echo ' <a id="authenticatecheckbook" href="javascript:openCheckbookModal()"> Pay with Checkbook </a>';
 				}
 				?>
 			</div>
@@ -296,15 +296,10 @@ function wc_checkbookio_gateway_init() {
 					// set content
 			modal.setContent('<iframe id = "authIframe"src="'  +  <?php echo '"' . $oauth_url . '"'; ?> + '" scrolling="yes" ></iframe>');
 
-			function test()
+			function openCheckbookModal()
 			{
 					modal.open();
 			}
-
-			
-
-
-
 			</script> <?php
 		}
 
