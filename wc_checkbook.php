@@ -22,7 +22,7 @@ if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins',
 
 /**
  * Add the gateway to WC Available Gateways
- * 
+ *
  * @since 1.0.0
  * @param array $gateways all available WC gateways
  * @return array $gateways all WC gateways + checkbookio gateway
@@ -73,7 +73,7 @@ add_action( 'wp_enqueue_scripts', 'tingle_css_init' );
 
 /**
  * Adds plugin page links
- * 
+ *
  * @since 1.0.0
  * @param array $links all plugin links
  * @return array $links all plugin links + our custom links (i.e., "Settings")
@@ -87,19 +87,6 @@ function wc_checkbookio_gateway_plugin_links( $links ) {
 	return array_merge( $plugin_links, $links );
 }
 add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'wc_checkbookio_gateway_plugin_links' );
-
-
-// function load_scripts()
-// {
-//     // Register the script like this for a plugin:
-//     wp_register_script( 'custom-script', plugins_url( 'scripts.js', __FILE__ ) );
-//     // or
-//     // Register the script like this for a theme:
- 
-//     // For either a plugin or a theme, you can then enqueue the script:
-//     wp_enqueue_script( 'custom-script' );
-// }
-// add_action( 'process_payment', 'load_csripts' );
 
 /**
  * checkbookio Payment Gateway
@@ -129,17 +116,17 @@ function wc_checkbookio_gateway_init() {
 			$this->has_fields         = true;
 			$this->method_title       = __( 'checkbookio', 'wc-gateway-checkbookio' );
 			$this->method_description = __( 'Allows Checkbook.io payments via digital checks. '. "\n". 'In order to configure this plugin, you must set the callback URL in the Checkbook.io API dashboard to: ' . plugins_url( 'callback.php', __FILE__ ), 'wc-gateway-checkbookio' );
-		  
+
 			// Load the settings.
 			$this->init_form_fields();
 			$this->init_settings();
-		  
+
 			// Define user set variables
 			$this->title        = $this->get_option( 'title' );
 			$this->clientID     = $this->get_option('clientID');
-		  	$this->checkRecipient = $this->get_option('checkRecipient');
-		  	$this->recipientEmail = $this->get_option('recipientEmail');
-				$this->apiSecret = $this->get_option('secretKey');
+		  $this->checkRecipient = $this->get_option('checkRecipient');
+		  $this->recipientEmail = $this->get_option('recipientEmail');
+			$this->apiSecret = $this->get_option('secretKey');
       $this->redirectURL = $this->get_option('redirectURL');
 			$this->sandbox = $this->get_option('sandbox');
 			$this->baseURL = 'https://checkbook.io';
@@ -148,50 +135,43 @@ function wc_checkbookio_gateway_init() {
 			}
 			// Actions
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-      
+
 			add_action('init', array($this, 'startSession'), 1);
 
 		  	// debug_to_console( "completed init" );
 		  	// debug_to_console($this->clientID);
-			
+
 			$_SESSION['clientID'] = $this->clientID;
-      	$_SESSION['redirectURL'] = $this->redirectURL;
+      $_SESSION['redirectURL'] = $this->redirectURL;
 
-        $filename = getcwd(). '/wp-content/plugins/checkbook-io-payment/api.txt';
+			//Write API Secret to server-side text document
+      $filename = getcwd(). '/wp-content/plugins/checkbook-io-payment/api.txt';
+			$handle = fopen($filename,'w+');
+			fwrite($handle, $this->apiSecret);
+			fclose($handle);
 
-				//open or create the file
-				$handle = fopen($filename,'w+');
-
-				//write the data into the file
-				fwrite($handle, $this->apiSecret);
-
-				//close the file
-				fclose($handle);
-		 $filename = getcwd(). '/wp-content/plugins/checkbook-io-payment/baseURL.txt';
-
-				//open or create the file
-				$handle = fopen($filename,'w+');
-
-				//write the data into the file
-				fwrite($handle, $this->baseURL);
-
-				//close the file
-				fclose($handle);
+			//Write baseURL (sandbox.checkbook or just checkbook) to a text document
+		 	$filename = getcwd(). '/wp-content/plugins/checkbook-io-payment/baseURL.txt';
+			$handle = fopen($filename,'w+');
+			fwrite($handle, $this->baseURL);
+			fclose($handle);
 		}
-	
+
+		//Unsure if this is needed for a second time
 		public function startSession() {
         if (!session_id()) {
             session_start();
         }
-      	
-    	}
+    }
+
+
 		/**
 		 * Initialize Gateway Settings Form Fields
 		 */
 		public function init_form_fields() {
-	  
+
 			$this->form_fields = apply_filters( 'wc_checkbookio_form_fields', array(
-		  
+
 				'enabled' => array(
 					'title'   => __( 'Enable/Disable', 'wc-gateway-checkbookio' ),
 					'type'    => 'checkbox',
@@ -211,22 +191,6 @@ function wc_checkbookio_gateway_init() {
 					'default'     => __( 'Checkbook.io Payment', 'wc-gateway-checkbookio' ),
 					'desc_tip'    => true,
 				),
-				
-				// 'description' => array(
-				// 	'title'       => __( 'Description', 'wc-gateway-checkbookio' ),
-				// 	'type'        => 'textarea',
-				// 	'description' => __( 'Payment method description that the customer will see on your checkout.', 'wc-gateway-checkbookio' ),
-				// 	'default'     => __( 'Please remit payment to Store Name upon pickup or delivery.', 'wc-gateway-checkbookio' ),
-				// 	'desc_tip'    => true,
-				// ),
-				
-				// 'instructions' => array(
-				// 	'title'       => __( 'Instructions', 'wc-gateway-checkbookio' ),
-				// 	'type'        => 'textarea',
-				// 	'description' => __( 'Instructions that will be added to the thank you page and emails.', 'wc-gateway-checkbookio' ),
-				// 	'default'     => '',
-				// 	'desc_tip'    => true,
-				// ),
 				'clientID' => array(
 					'title'       => __( 'Client ID', 'wc-gateway-checkbookio' ),
 					'type'        => 'text',
@@ -264,35 +228,28 @@ function wc_checkbookio_gateway_init() {
 				)
 			) );
 		}
-		
-	
-		public function payment_fields(){
-			$oauth_url = $this->baseURL . "/oauth/authorize?client_id=" . $this->clientID . '&response_type=code&state=asdfasdfasd &scope=check&redirect_uri='
-			. 
-			get_site_url() 
-			.
 
-			'/wp-content/plugins/checkbook-io-payment/callback.php';
-			
+		/**
+		 * Create the UI for the payment fields. In this case the only payment field is the button to authenticate.
+		 */
+		public function payment_fields(){
+			$oauth_url = $this->baseURL . "/oauth/authorize?client_id=" . $this->clientID . '&response_type=code&state=asdfasdfasd &scope=check&redirect_uri=' . get_site_url() . '/wp-content/plugins/checkbook-io-payment/callback.php';
       $_SESSION['oauth_url'] = $oauth_url;
-			// $oauth_url = "https://sandbox.checkbook.io/oauth/authorize?client_id=" . $this->clientID . '&response_type=code&scope=check&redirect_uri='. 'http://127.0.0.1:8888/wordpress/checkout/';
 			?>
 			<link rel="stylesheet" href= <?php '"'. plugins_url( 'css/tingle.css', __FILE__ ) .'"'?> >
 			<script src=<?php '"'. plugins_url( 'js/tingle.js', __FILE__ ) .'"'?>></script>
-				<div id="txtHint">
-			<?php 
-				if($_SESSION['authorized'] == "true"){
-          echo '<p style="color:green;"> Authorization complete. You are now ready to make a payment via Checkbook. </p>';
-        }else{
-         echo ' <a id="authenticatecheckbook" href="javascript:test()"> Pay with Checkbook </a>';
-       }
-			?>
-          </div>
-		
-
-			     <!-- <iframe id = "authIframe"src= <?php echo '"'.  $oauth_url .'"';?> scrolling="yes" ></iframe> -->
-
-			
+			<div id="txtHint">
+				<?php
+				if($_SESSION['authorized'] == "true")
+				{
+					echo '<p style="color:green;"> Authorization complete. You are now ready to make a payment via Checkbook. </p>';
+				}
+				else
+				{
+					echo ' <a id="authenticatecheckbook" href="javascript:test()"> Pay with Checkbook </a>';
+				}
+				?>
+			</div>
 
 			<style>
 				#authIframe{
@@ -337,61 +294,20 @@ function wc_checkbookio_gateway_init() {
 					});
 
 					// set content
-					modal.setContent('<iframe id = "authIframe"src="'  +  <?php echo '"' . $oauth_url . '"'; ?> + '" scrolling="yes" ></iframe>');
-			
-        
+			modal.setContent('<iframe id = "authIframe"src="'  +  <?php echo '"' . $oauth_url . '"'; ?> + '" scrolling="yes" ></iframe>');
 
-       
-       
-
-
-							// Get the modal
-				
-				
-
-
-			// function updateAuthStatus(){
-			// 	// console.log("test");
-			// 	 var xhttp = new XMLHttpRequest();
-			//   xhttp.onreadystatechange = function() {
-			//     if (this.readyState == 4 && this.status == 200) {
-			//      document.getElementById("txtHint").innerHTML = this.responseText;
-			//     }
-			//   };
-			//   xhttp.open("GET", "'. plugins_url( 'result.txt', __FILE__ ) .'", true);
-			//   xhttp.send();
-			// }
-			// setInterval(updateAuthStatus, 1000);
-
-			function test(){ 
-				// document.getElementById("myDialog").showModal();
-				// childWindow = window.open("'. $oauth_url . '","name" ,"height=600,width=600");
-									// if (window.focus) {newwindow.focus()}
-					// instanciate new modal
-
-					
-
-					// add a button
-					
-
-					// open modal
+			function test()
+			{
 					modal.open();
-
-					// close modal
-					// modal.close();
-            
-
-
 			}
-			function test2(){
-				window.location.href = "'.$oauth_url.'";
-			}
-
 
 			
+
+
+
 			</script> <?php
 		}
-	
+
 		public function validate_fields(){
       if(!$_SESSION['authorized'] == "true"){
         wc_add_notice(  'Please press "Pay with Checkbook" to authorize payments. ', 'error' );
@@ -400,7 +316,7 @@ function wc_checkbookio_gateway_init() {
         return true;
       }
     }
-	
+
 		/**
 		 * Process the payment and return the result
 		 *
@@ -409,11 +325,11 @@ function wc_checkbookio_gateway_init() {
 		 */
 		public function process_payment( $order_id ) {
 			$order = wc_get_order( $order_id );
-			
+
 			//$str = file_get_contents(getcwd(). '/wp-content/plugins/checkbook-io-payment/bearer.json');
 
 
-			
+
 
 
 			// $request = new HttpRequest();
@@ -427,7 +343,7 @@ function wc_checkbookio_gateway_init() {
 
 			// $request->setBody('{
 			// 	"name":' . $this->checkRecipient . ',
-			// 	"recipient":' . $this->recipientEmail . ', 
+			// 	"recipient":' . $this->recipientEmail . ',
 			// 	"amount": '. $order['data']['total_tax'] .'
 			// }');
 
@@ -445,7 +361,7 @@ function wc_checkbookio_gateway_init() {
 			// }
 
 			$curl = curl_init();
-			
+
 			curl_setopt_array($curl, array(
 			  CURLOPT_URL => $this->baseURL . "/v3/check/digital",
 			  CURLOPT_RETURNTRANSFER => true,
@@ -472,12 +388,12 @@ function wc_checkbookio_gateway_init() {
 			} else {
 			   error_log($response);
         //array_key_exists('id', json_decode($response, true))
-      
+
          if(array_key_exists('id', json_decode($response, true))){
            // Mark as on-hold (we're awaiting the payment)
 			$order->update_status( 'complete', __( 'Order Complete.', 'wc-gateway-checkbookio' ) );
 
-			
+
 			// Remove cart
 			WC()->cart->empty_cart();
 
@@ -486,7 +402,7 @@ function wc_checkbookio_gateway_init() {
 
 
 			// $oauth_url = "https://sandbox.checkbook.io/oauth/authorize?client_id=" . $this->clientID . '&response_type=code&scope=check&redirect_uri='. 'http://127.0.0.1:8888/wordpress/wp-content/plugins/checkbook-io-payment/callback.php';
-			
+
 			      session_destroy();
 
 			// Return thankyou redirect
@@ -494,27 +410,27 @@ function wc_checkbookio_gateway_init() {
 				'result' 	=> 'success',
 				'redirect'	=> $this->get_return_url($order)
 			);
-           
+
          }else{
                    session_destroy();
 
            wc_add_notice( __('Payment error: Something went wrong. Please refresh the page and try again. (Error: ' . json_decode($response, true)['error']. ')', 'checkbook') . $error_message, 'error' );
            return;
-           
+
          }
-            
-			
-	
-		
 
 
-			
+
+
+
+
+
 			}
 
-			
+
 		}
 
-	
+
   } // end \WC_Gateway_checkbookio class
 
 
