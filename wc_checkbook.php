@@ -206,14 +206,14 @@ function wc_checkbookio_gateway_init() {
 					'desc_tip'    => true,
 				),
 				'checkRecipient' => array(
-					'title'       => __( 'Check Recipient', 'wc-gateway-checkbookio' ),
+					'title'       => __( 'Check Recipient (Your/Your Business\' Name)', 'wc-gateway-checkbookio' ),
 					'type'        => 'text',
 					'description' => __( 'Please enter the name of the check recipient. (Person/business to whom payments on the site should be directed)', 'wc-gateway-checkbookio' ),
 					'default'     => '',
 					'desc_tip'    => true,
 				),
 				'recipientEmail' => array(
-					'title'       => __( 'Email', 'wc-gateway-checkbookio' ),
+					'title'       => __( 'Email (Your/Your Business\' Email)', 'wc-gateway-checkbookio' ),
 					'type'        => 'text',
 					'description' => __( 'Please enter the email address to which check reciepts should be sent.', 'wc-gateway-checkbookio' ),
 					'default'     => '',
