@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: WooCommerce Checkbook.io plugin
+Plugin Name: WooCommerce Checkbook.io Plugin
 Plugin URI: www.checkbook.io
 Description: WooCommerce plugin for Checkbook.io payments
 Version: 0.0.2
