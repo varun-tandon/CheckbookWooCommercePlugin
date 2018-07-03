@@ -1,9 +1,10 @@
 <?php
 
-function start_session(){
+function checkbook_io_start_session(){
   if (!session_id())
   session_start();
 }
+checkbook_io_start_session();
 //Start the session to access $_SESSION variables
 
 //Retrieve data from $_SESSION and server files
