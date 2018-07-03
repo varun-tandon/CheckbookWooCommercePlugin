@@ -1,7 +1,7 @@
 <?php
-function checkbook_io_set_bearer(bearerValue){
+function checkbook_io_set_bearer($bearerValue){
   session_start();
-  $_SESSION['bearerToken'] = bearerValue;
+  $_SESSION['bearerToken'] = $bearerValue;
 }
 //Start the session to access $_SESSION variables
 
