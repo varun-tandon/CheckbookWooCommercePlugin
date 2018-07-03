@@ -104,7 +104,7 @@ add_action( 'plugins_loaded', 'checkbookio_gateway_init', 11 );
 
 function checkbookio_gateway_init() {
 
-	class WC_Gateway_checkbookio extends WC_Payment_Gateway {
+	class WC_Gateway_Checkbook extends WC_Payment_Gateway {
 
 		/**
 		 * Constructor for the gateway.
