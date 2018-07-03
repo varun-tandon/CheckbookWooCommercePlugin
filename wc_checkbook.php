@@ -47,8 +47,6 @@ function checkbookio_sess_start() {
 add_action('init','checkbookio_sess_start', 1);
 
 
-
-
 /**
  * Initialize the tingle.js file (for the modal)
  */

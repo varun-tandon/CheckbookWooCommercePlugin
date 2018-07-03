@@ -1,7 +1,9 @@
 <?php
-
+function checkbook_io_set_bearer(bearerValue){
+  session_start();
+  $_SESSION['bearerToken'] = bearerValue;
+}
 //Start the session to access $_SESSION variables
-session_start();
 
 //Retrieve data from $_SESSION and server files
 $client_id = $_SESSION['clientID'];
@@ -34,7 +36,7 @@ else
   $resp = curl_exec($handle);
   $formattedData = json_decode($resp, true);
   //Pass bearer token into session
-  $_SESSION['bearerToken'] = $formattedData['access_token'];
+  checkbook_io_set_bearer($formattedData['access_token']);
   $_SESSION['authorized'] = "true";
 
   echo '
