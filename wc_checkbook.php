@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: WooCommerce Checkbook.io Plugin
+Plugin Name: Checkbook.io
 Plugin URI: www.checkbook.io
 Description: WooCommerce plugin for Checkbook.io payments
 Version: 0.0.2
@@ -27,24 +27,24 @@ if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins',
  * @param array $gateways all available WC gateways
  * @return array $gateways all WC gateways + checkbookio gateway
  */
-function wc_checkbookio_add_to_gateways( $gateways ) {
-	$gateways[] = 'WC_Gateway_checkbookio';
+function checkbookio_add_to_gateways( $gateways ) {
+	$gateways[] = 'WC_Gateway_Checkbook';
 	return $gateways;
 }
-add_filter( 'woocommerce_payment_gateways', 'wc_checkbookio_add_to_gateways' );
+add_filter( 'woocommerce_payment_gateways', 'checkbookio_add_to_gateways' );
 
 
 
 /**
  * Ensure that the session has started
  */
-function sess_start() {
+function checkbookio_sess_start() {
     if (!session_id())
     session_start();
 
 }
 
-add_action('init','sess_start', 1);
+add_action('init','checkbookio_sess_start', 1);
 
 
 
@@ -52,21 +52,21 @@ add_action('init','sess_start', 1);
 /**
  * Initialize the tingle.js file (for the modal)
  */
-function tingle_js_init() {
+function checkbookio_tingle_js_init() {
     wp_enqueue_script( 'tingle-js', plugins_url( 'js/tingle.js', __FILE__ ));
 }
-add_action('wp_enqueue_scripts','tingle_js_init');
+add_action('wp_enqueue_scripts','checkbookio_tingle_js_init');
 
 
 /**
  * Initialize the tingle.css file (for the modal)
  */
-function tingle_css_init() {
+function checkbookio_tingle_css_init() {
     $plugin_url = plugin_dir_url(__FILE__ );
 
     wp_enqueue_style( 'style1', $plugin_url . 'css/tingle.css' );
 }
-add_action( 'wp_enqueue_scripts', 'tingle_css_init' );
+add_action( 'wp_enqueue_scripts', 'checkbookio_tingle_css_init' );
 
 
 
@@ -78,7 +78,7 @@ add_action( 'wp_enqueue_scripts', 'tingle_css_init' );
  * @param array $links all plugin links
  * @return array $links all plugin links + our custom links (i.e., "Settings")
  */
-function wc_checkbookio_gateway_plugin_links( $links ) {
+function checkbookio_gateway_plugin_links( $links ) {
 
 	$plugin_links = array(
 		'<a href="' . admin_url( 'admin.php?page=wc-settings&tab=checkout&section=checkbookio_gateway' ) . '">' . __( 'Configure', 'wc-gateway-checkbookio' ) . '</a>'
@@ -86,7 +86,7 @@ function wc_checkbookio_gateway_plugin_links( $links ) {
 
 	return array_merge( $plugin_links, $links );
 }
-add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'wc_checkbookio_gateway_plugin_links' );
+add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'checkbookio_gateway_plugin_links' );
 
 /**
  * checkbookio Payment Gateway
@@ -94,15 +94,15 @@ add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'wc_checkbooki
  * Provides an checkbookio Payment Gateway; mainly for testing purposes.
  * We load it later to ensure WC is loaded first since we're extending it.
  *
- * @class 		WC_Gateway_checkbookio
+ * @class 		WC_Gateway_Checkbook
  * @extends		WC_Payment_Gateway
  * @version		1.0.0
  * @package		WooCommerce/Classes/Payment
  * @author 		SkyVerge
  */
-add_action( 'plugins_loaded', 'wc_checkbookio_gateway_init', 11 );
+add_action( 'plugins_loaded', 'checkbookio_gateway_init', 11 );
 
-function wc_checkbookio_gateway_init() {
+function checkbookio_gateway_init() {
 
 	class WC_Gateway_checkbookio extends WC_Payment_Gateway {
 
@@ -161,7 +161,9 @@ function wc_checkbookio_gateway_init() {
 		public function startSession() {
         if (!session_id()) {
             session_start();
-        }
+        }else{
+					error_log('No need for session');
+				}
     }
 
 
