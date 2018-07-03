@@ -136,7 +136,6 @@ function checkbookio_gateway_init() {
 			// Actions
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 
-			add_action('init', array($this, 'startSession'), 1);
 
 		  	// debug_to_console( "completed init" );
 		  	// debug_to_console($this->clientID);
@@ -157,14 +156,6 @@ function checkbookio_gateway_init() {
 			fclose($handle);
 		}
 
-		//Unsure if this is needed for a second time
-		public function startSession() {
-        if (!session_id()) {
-            session_start();
-        }else{
-					error_log('No need for session');
-				}
-    }
 
 
 		/**
