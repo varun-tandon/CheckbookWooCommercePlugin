@@ -142,13 +142,13 @@ function checkbookio_gateway_init() {
       $_SESSION['redirectURL'] = $this->redirectURL;
 
 			//Write API Secret to server-side text document
-      $filename = getcwd(). '/wp-content/plugins/checkbook-io-payment/api.txt';
+      $filename = getcwd(). '/wp-content/checkbook-io/api.txt';
 			$handle = fopen($filename,'w+');
 			fwrite($handle, $this->apiSecret);
 			fclose($handle);
 
 			//Write baseURL (sandbox.checkbook or just checkbook) to a text document
-		 	$filename = getcwd(). '/wp-content/plugins/checkbook-io-payment/baseURL.txt';
+		 	$filename = getcwd(). '/wp-content/checkbook-io/baseURL.txt';
 			$handle = fopen($filename,'w+');
 			fwrite($handle, $this->baseURL);
 			fclose($handle);
@@ -225,7 +225,7 @@ function checkbookio_gateway_init() {
 		 */
 		public function payment_fields()
 		{
-			$oauth_url = $this->baseURL . "/oauth/authorize?client_id=" . $this->clientID . '&response_type=code&state=asdfasdfasd &scope=check&redirect_uri=' . get_site_url() . '/wp-content/plugins/checkbook-io-payment/callback.php';
+			$oauth_url = $this->baseURL . "/oauth/authorize?client_id=" . $this->clientID . '&response_type=code&state=asdfasdfasd &scope=check&redirect_uri=' . get_site_url() . '/wp-content/plugins/checkbook-io/callback.php';
       $_SESSION['oauth_url'] = $oauth_url;
 			?>
 			<link rel="stylesheet" href= <?php '"'. plugins_url( 'css/tingle.css', __FILE__ ) .'"'?> >
