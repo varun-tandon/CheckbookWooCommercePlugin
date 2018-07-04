@@ -6,11 +6,10 @@ function checkbook_io_start_session(){
 }
 checkbook_io_start_session();
 //Start the session to access $_SESSION variables
-
 //Retrieve data from $_SESSION and server files
 $client_id = $_SESSION['clientID'];
-$client_secret = file_get_contents('api.txt');
-$baseURL = file_get_contents('baseURL.txt');
+$client_secret = file_get_contents(realpath(__DIR__ . '/../..') . '/checkbook-io/api.txt');
+$baseURL = file_get_contents(realpath(__DIR__ . '/../..') . '/checkbook-io/baseURL.txt');
 $redirect_uri= $_SESSION['redirectURL'];
 $authorization_code = $_GET['code'];
 
