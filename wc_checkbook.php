@@ -325,6 +325,47 @@ function checkbookio_gateway_init() {
 			$order = wc_get_order( $order_id );
 
 			//Submit the POST of the digital check
+
+			// $response = wp_remote_post( $this->baseURL . "/v3/check/digital", array(
+			// 	'method' => 'POST',
+			// 	'timeout' => 45,
+			// 	'redirection' => 5,
+			// 	'httpversion' => '1.1',
+			// 	'blocking' => true,
+			// 	'headers' => array(
+			// 	   	"Authorization: Bearer " . $_SESSION['bearerToken'] ."",
+			// 	     "Cache-Control: no-cache",
+			// 	     "Content-Type: application/json",
+			// 	   ),
+			// 	'body' => "{\n\t\"name\":\"". $this->checkRecipient .".\",\n\t\"recipient\":\"". $this->recipientEmail ."\", \n\t\"amount\": ". $order->get_data()['total'] . "\n}",
+			// 	'cookies' => array()
+			//     )
+			// );
+			// if ( is_wp_error( $response ) ) {
+			//    $error_message = $response->get_error_message();
+			//    echo "Something went wrong: $error_message";
+			// } else {
+			// 	if(array_key_exists('id', $response['response']))
+			// 	{
+			// 		 $order->update_status( 'complete', __( 'Order Complete.', 'wc-gateway-checkbookio' ) );
+			// 		 WC()->cart->empty_cart();
+			// 		 session_destroy();
+			// 		 return array(
+			// 			 'result' 	=> 'success',
+			// 			 'redirect'	=> $this->get_return_url($order)
+			// 		 );
+			// 	}
+			// 	else
+			// 	{
+			// 	 //There was an issue that resulted in the payment failing. Prevent the site from registering this as a compelted transaction.
+			// 	 session_destroy();
+			// 	 wc_add_notice( __('Payment error: Something went wrong. Please refresh the page and try again. (Error: ' . json_decode($response, true)['error']. ')', 'checkbook') . $error_message, 'error' );
+			// 	 return;
+			// 	}
+			// }
+
+
+
 			$curl = curl_init();
 			curl_setopt_array($curl, array(
 			  CURLOPT_URL => $this->baseURL . "/v3/check/digital",
@@ -353,7 +394,7 @@ function checkbookio_gateway_init() {
 			   error_log($response);
          if(array_key_exists('id', json_decode($response, true)))
 				 {
-					 	$order->update_status( 'complete', __( 'Order Complete.', 'wc-gateway-checkbookio' ) );
+					 	$order->update_status( 'completed', __( 'Order Complete.', 'wc-gateway-checkbookio' ) );
 						WC()->cart->empty_cart();
 			      session_destroy();
 						return array(
