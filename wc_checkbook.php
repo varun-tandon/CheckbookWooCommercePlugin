@@ -100,6 +100,7 @@ add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'checkbookio_g
  */
 add_action( 'plugins_loaded', 'checkbookio_gateway_init', 11 );
 
+
 function checkbookio_gateway_init() {
 
 	class WC_Gateway_Checkbook extends WC_Payment_Gateway {
@@ -125,7 +126,7 @@ function checkbookio_gateway_init() {
 		  $this->checkRecipient = $this->get_option('checkRecipient');
 		  $this->recipientEmail = $this->get_option('recipientEmail');
 			$this->apiSecret = $this->get_option('secretKey');
-      $this->redirectURL = $this->get_option('redirectURL');
+      $this->redirectURL = plugins_url( 'callback.php', __FILE__ );
 			$this->sandbox = $this->get_option('sandbox');
 			$this->customEmailAddress = $this->get_option('customEmailAddress');
 			$this->baseURL = 'https://checkbook.io';
@@ -160,6 +161,12 @@ function checkbookio_gateway_init() {
 			$handle = fopen($filename,'w+');
 			fwrite($handle, $this->baseURL);
 			fclose($handle);
+
+
+
+
+
+
 		}
 
 
@@ -246,7 +253,7 @@ function checkbookio_gateway_init() {
 			<script src=<?php '"'. plugins_url( 'js/tingle.js', __FILE__ ) .'"'?>></script>
 
 				<?php
-				if($this->customEmailAddress){
+				if($this->customEmailAddress == "yes"){
 					echo '
 
 						<input type="text" id = "customName" name="customName" onkeyup="updateEmail()"placeholder="Check Recipient Name..." value="'.$_SESSION['custom_name'].'">
@@ -366,6 +373,13 @@ function checkbookio_gateway_init() {
       }
     }
 
+		// public function email_instructions( $order, $sent_to_admin, $plain_text = false ) {
+		//
+		//         echo "<h1> Hello this is a test </h1>";
+		//
+		// }
+
+
 		/**
 		 * Process the payment and return the result
 		 *
@@ -375,6 +389,8 @@ function checkbookio_gateway_init() {
 		public function process_payment( $order_id ) {
 			$order = wc_get_order( $order_id );
 
+
+			// $order->add_order_note("Hello this is a test. Thank you.");
 			//Submit the POST of the digital check
 
 			// $response = wp_remote_post( $this->baseURL . "/v3/check/digital", array(
@@ -420,12 +436,21 @@ function checkbookio_gateway_init() {
 				if(isset($_SESSION['custom_name']) && isset($_SESSION['custom_email_address'])){
 					$this->checkRecipient = $_SESSION['custom_name'];
 					$this->recipientEmail = $_SESSION['custom_email_address'];
+
+					add_action( 'woocommerce_email_after_order_table', 'wdm_add_shipping_method_to_order_email', 10, 2 );
+					function wdm_add_shipping_method_to_order_email( $order, $is_admin_email ) {
+							echo '<p><h1>Check Recipient Details:</h1><h4> Name: '  . $_SESSION['custom_name'].'  </h4><h4> Email: '. $_SESSION['custom_email_address'] .' </h4> </p>';
+					}
 				}else{
-					session_destroy();
           wc_add_notice('Payment error: Please enter a check recipient name and email address.', 'error');
           return;
 				}
 			}
+
+
+
+
+
 			$curl = curl_init();
 			curl_setopt_array($curl, array(
 			  CURLOPT_URL => $this->baseURL . "/v3/check/digital",
