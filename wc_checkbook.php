@@ -43,7 +43,6 @@ function checkbookio_sess_start() {
     session_start();
 
 }
-
 add_action('init','checkbookio_sess_start', 1);
 
 
@@ -284,7 +283,7 @@ function checkbookio_gateway_init() {
           }
 
 
-     </script>
+     			</script>
 
 
 
