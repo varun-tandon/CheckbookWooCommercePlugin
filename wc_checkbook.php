@@ -127,10 +127,12 @@ function checkbookio_gateway_init() {
 			$this->apiSecret = $this->get_option('secretKey');
       $this->redirectURL = $this->get_option('redirectURL');
 			$this->sandbox = $this->get_option('sandbox');
+			$this->customEmailAddress = $this->get_option('customEmailAddress');
 			$this->baseURL = 'https://checkbook.io';
 			if($this->sandbox == "yes"){
 				$this->baseURL = 'https://sandbox.checkbook.io';
 			}
+
 			// Actions
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 
@@ -179,6 +181,12 @@ function checkbookio_gateway_init() {
 					'title'   => __( 'Sandbox Mode', 'wc-gateway-checkbookio' ),
 					'type'    => 'checkbox',
 					'label'   => __( 'Use Checkbook in Sandbox mode', 'wc-gateway-checkbookio' ),
+					'default' => 'no'
+				),
+				'customEmailAddress' => array(
+					'title'   => __( 'Allow User To Input Recipient', 'wc-gateway-checkbookio' ),
+					'type'    => 'checkbox',
+					'label'   => __( 'Allow the user to input the recipient of the check. This will add a form field for the user to place a custom email address.', 'wc-gateway-checkbookio' ),
 					'default' => 'no'
 				),
 				'title' => array(
@@ -236,7 +244,50 @@ function checkbookio_gateway_init() {
 			?>
 			<link rel="stylesheet" href= <?php '"'. plugins_url( 'css/tingle.css', __FILE__ ) .'"'?> >
 			<script src=<?php '"'. plugins_url( 'js/tingle.js', __FILE__ ) .'"'?>></script>
-			<div id="txtHint">
+
+				<?php
+				if($this->customEmailAddress){
+					echo '
+
+						<input type="text" id = "customName" name="customName" onkeyup="updateEmail()"placeholder="Check Recipient Name..." value="'.$_SESSION['custom_name'].'">
+						<br>
+						<input type="text" id = "customEmailAddress" onkeyup="updateEmail()" name="customEmailAddress" onkeyup="updateEmail()" placeholder="Check Recipient Email Address..." value="'.$_SESSION['custom_email_address'].'">
+						<br>
+
+          <script>
+
+          function updateEmail(){
+          var customEmail = $("#customEmailAddress").val();
+					var customName = $("#customName").val();
+           $.ajax({
+                url: "'. plugins_url( 'emailaddress.php', __FILE__ ). '", //window.location points to the current url. change is needed.
+                type: "POST",
+                data: {
+                  custom_email_address: customEmail,
+									custom_name: customName
+                },
+                success: function( response){
+                  console.log(response);
+                },
+                error: function(error){
+                  console.log("error");
+                }
+          });
+
+          }
+
+
+     </script>
+
+
+
+
+
+					';
+				}
+
+				?>
+				<div id="txtHint">
 				<?php
 				if($_SESSION['authorized'] == "true")
 				{
@@ -365,7 +416,16 @@ function checkbookio_gateway_init() {
 			// }
 
 
-
+			if($this->customEmailAddress == "yes"){
+				if(isset($_SESSION['custom_name']) && isset($_SESSION['custom_email_address'])){
+					$this->checkRecipient = $_SESSION['custom_name'];
+					$this->recipientEmail = $_SESSION['custom_email_address'];
+				}else{
+					session_destroy();
+          wc_add_notice('Payment error: Please enter a check recipient name and email address.', 'error');
+          return;
+				}
+			}
 			$curl = curl_init();
 			curl_setopt_array($curl, array(
 			  CURLOPT_URL => $this->baseURL . "/v3/check/digital",
