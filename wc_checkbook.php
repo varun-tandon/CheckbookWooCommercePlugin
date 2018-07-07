@@ -446,54 +446,99 @@ function checkbookio_gateway_init() {
 				}
 			}
 
+				$argdata = (array(
+							'name' => $this->checkRecipient,
+							'recipient' => $this->recipientEmail,
+							'amount' => (float)$order->get_data()['total']
+						));
+				$data = json_encode($argdata);
+				error_log($data);
+				$response = wp_remote_post( $this->baseURL . "/v3/check/digital", array(
+					'method' => 'POST',
+					'timeout' => 30,
+					'redirection' => 10,
+					'httpversion' => '1.1',
+					'blocking' => true,
+					'headers' => array(
+								'Authorization' => 'Bearer ' . $_SESSION['bearerToken'],
+								'Cache-Control' => 'no-cache',
+								'Content-Type' => 'application/json',
+							),
+					'body' => $data,
+					'cookies' => array()
+				)
+			);
 
+			if ( is_wp_error( $response ) ) {
+				$error_message = $response->get_error_message();
+				echo "Something went wrong: $error_message";
+			} else {
 
-
-
-			$curl = curl_init();
-			curl_setopt_array($curl, array(
-			  CURLOPT_URL => $this->baseURL . "/v3/check/digital",
-			  CURLOPT_RETURNTRANSFER => true,
-			  CURLOPT_ENCODING => "",
-			  CURLOPT_MAXREDIRS => 10,
-			  CURLOPT_TIMEOUT => 30,
-			  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-			  CURLOPT_CUSTOMREQUEST => "POST",
-			  CURLOPT_POSTFIELDS => "{\n\t\"name\":\"". $this->checkRecipient .".\",\n\t\"recipient\":\"". $this->recipientEmail ."\", \n\t\"amount\": ". $order->get_data()['total'] . "\n}",
-			  CURLOPT_HTTPHEADER => array(
-			  	"Authorization: Bearer " . $_SESSION['bearerToken'] ."",
-			    "Cache-Control: no-cache",
-			    "Content-Type: application/json",
-			  ),
-			));
-			$response = curl_exec($curl);
-			$err = curl_error($curl);
-			curl_close($curl);
-			if ($err)
-			{
-			  error_log("cURL Error #:" . $err);
-			} else
-			{
-				 //Now that the post is complete...
-			   error_log($response);
-         if(array_key_exists('id', json_decode($response, true)))
-				 {
-					 	$order->update_status( 'completed', __( 'Order Complete.', 'wc-gateway-checkbookio' ) );
-						WC()->cart->empty_cart();
-			      session_destroy();
-						return array(
-							'result' 	=> 'success',
-							'redirect'	=> $this->get_return_url($order)
-						);
-         }
-				 else
-				 {
-					//There was an issue that resulted in the payment failing. Prevent the site from registering this as a compelted transaction.
-          session_destroy();
-          wc_add_notice( __('Payment error: Something went wrong. Please refresh the page and try again. (Error: ' . json_decode($response, true)['error']. ')', 'checkbook') . $error_message, 'error' );
-          return;
-         }
+				error_log(print_r($response['body']));
+				if(array_key_exists('id', json_decode($response, true)))
+				{
+					 $order->update_status( 'completed', __( 'Order Complete.', 'wc-gateway-checkbookio' ) );
+					 WC()->cart->empty_cart();
+					 session_destroy();
+					 return array(
+						 'result' 	=> 'success',
+						 'redirect'	=> $this->get_return_url($order)
+					 );
+				}
+				else
+				{
+				 //There was an issue that resulted in the payment failing. Prevent the site from registering this as a compelted transaction.
+				 session_destroy();
+				 wc_add_notice( __('Payment error: Something went wrong. Please refresh the page and try again. (Error: ' . json_decode($response, true)['error']. ')', 'checkbook') . $error_message, 'error' );
+				 return;
+				}
 			}
+
+
+			// $curl = curl_init();
+			// curl_setopt_array($curl, array(
+			//   CURLOPT_URL => $this->baseURL . "/v3/check/digital",
+			//   CURLOPT_RETURNTRANSFER => true,
+			//   CURLOPT_ENCODING => "",
+			//   CURLOPT_MAXREDIRS => 10,
+			//   CURLOPT_TIMEOUT => 30,
+			//   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			//   CURLOPT_CUSTOMREQUEST => "POST",
+			//   CURLOPT_POSTFIELDS => "{\n\t\"name\":\"". $this->checkRecipient .".\",\n\t\"recipient\":\"". $this->recipientEmail ."\", \n\t\"amount\": ". $order->get_data()['total'] . "\n}",
+			//   CURLOPT_HTTPHEADER => array(
+			//   	"Authorization: Bearer " . $_SESSION['bearerToken'] ."",
+			//     "Cache-Control: no-cache",
+			//     "Content-Type: application/json",
+			//   ),
+			// ));
+			// $response = curl_exec($curl);
+			// $err = curl_error($curl);
+			// curl_close($curl);
+			// if ($err)
+			// {
+			//   error_log("cURL Error #:" . $err);
+			// } else
+			// {
+			// 	 //Now that the post is complete...
+			//    error_log($response);
+      //    if(array_key_exists('id', json_decode($response, true)))
+			// 	 {
+			// 		 	$order->update_status( 'completed', __( 'Order Complete.', 'wc-gateway-checkbookio' ) );
+			// 			WC()->cart->empty_cart();
+			//       session_destroy();
+			// 			return array(
+			// 				'result' 	=> 'success',
+			// 				'redirect'	=> $this->get_return_url($order)
+			// 			);
+      //    }
+			// 	 else
+			// 	 {
+			// 		//There was an issue that resulted in the payment failing. Prevent the site from registering this as a compelted transaction.
+      //     session_destroy();
+      //     wc_add_notice( __('Payment error: Something went wrong. Please refresh the page and try again. (Error: ' . json_decode($response, true)['error']. ')', 'checkbook') . $error_message, 'error' );
+      //     return;
+      //    }
+			// }
 		}
   }
 }
