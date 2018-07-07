@@ -452,7 +452,6 @@ function checkbookio_gateway_init() {
 							'amount' => (float)$order->get_data()['total']
 						));
 				$data = json_encode($argdata);
-				error_log($data);
 				$response = wp_remote_post( $this->baseURL . "/v3/check/digital", array(
 					'method' => 'POST',
 					'timeout' => 30,
@@ -473,8 +472,7 @@ function checkbookio_gateway_init() {
 				$error_message = $response->get_error_message();
 				echo "Something went wrong: $error_message";
 			} else {
-
-				error_log(print_r($response['body']));
+				$response = $response['body'];
 				if(array_key_exists('id', json_decode($response, true)))
 				{
 					 $order->update_status( 'completed', __( 'Order Complete.', 'wc-gateway-checkbookio' ) );
