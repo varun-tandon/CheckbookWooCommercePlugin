@@ -49,8 +49,9 @@ add_action('init','checkbookio_sess_start', 1);
  * Initialize the tingle.js file (for the modal)
  */
 function checkbookio_customjs_init() {
+  	wp_enqueue_script("jquery");
     wp_enqueue_script( 'tingle-js', plugins_url( 'js/tingle.js', __FILE__ ));
-		wp_enqueue_script( 'scripts-js', plugins_url( 'js/scripts.js', __FILE__ ));
+		wp_enqueue_script( 'scripts-js', plugins_url( 'js/scripts.js', __FILE__ ), array( 'jquery' ), '', true );
 }
 add_action('wp_enqueue_scripts','checkbookio_customjs_init');
 
@@ -254,13 +255,12 @@ function checkbookio_gateway_init() {
 				<?php
 				if($this->customEmailAddress == "yes"){
 					echo '
-
-						<input type="text" id = "customName" name="customName" onkeyup="updateEmail()"placeholder="Check Recipient Name..." value="'.$_SESSION['custom_name'].'">
+						<input type="text" id = "customName" name="customName" onkeyup="updateEmail(\''. plugins_url( 'emailaddress.php', __FILE__ ) .'\')"placeholder="Check Recipient Name..." value="'.$_SESSION['custom_name'].'">
 						<br>
-						<input type="text" id = "customEmailAddress" onkeyup="updateEmail()" name="customEmailAddress" onkeyup="updateEmail()" placeholder="Check Recipient Email Address..." value="'.$_SESSION['custom_email_address'].'">
+						<input type="text" id = "customEmailAddress" onkeyup="updateEmail(\''. plugins_url( 'emailaddress.php', __FILE__ ) .'\')" name="customEmailAddress" onkeyup="updateEmail(\'' . plugins_url( 'emailaddress.php', __FILE__ ).'\')" placeholder="Check Recipient Email Address..." value="'.$_SESSION['custom_email_address'].'">
 						<br>
 
-        
+
 
 
 
@@ -278,7 +278,7 @@ function checkbookio_gateway_init() {
 				}
 				else
 				{
-					echo ' <a id="authenticatecheckbook" href="javascript:openCheckbookModal()"> Pay with Checkbook </a>';
+					echo ' <a id="authenticatecheckbook" href="javascript:openCheckbookModal(\''. $oauth_url .'\')"> Pay with Checkbook </a>';
 				}
 				?>
 			</div>
@@ -363,7 +363,7 @@ function checkbookio_gateway_init() {
 				if(isset($_SESSION['custom_name']) && isset($_SESSION['custom_email_address'])){
 					$this->checkRecipient = $_SESSION['custom_name'];
 					$this->recipientEmail = $_SESSION['custom_email_address'];
-
+					error_log($this->recipientEmail);
 					add_action( 'woocommerce_email_after_order_table', 'wdm_add_shipping_method_to_order_email', 10, 2 );
 					function wdm_add_shipping_method_to_order_email( $order, $is_admin_email ) {
 							echo '<p><h1>Check Recipient Details:</h1><h4> Name: '  . $_SESSION['custom_name'].'  </h4><h4> Email: '. $_SESSION['custom_email_address'] .' </h4> </p>';

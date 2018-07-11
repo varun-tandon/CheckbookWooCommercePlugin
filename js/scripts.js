@@ -18,18 +18,18 @@ var modal = new tingle.modal({
         }
     });
 
-modal.setContent('<iframe id = "authIframe"src="'  +  <?php echo '"' . $oauth_url . '"'; ?> + '" scrolling="yes" ></iframe>');
-
-function openCheckbookModal()
+function openCheckbookModal(url)
 {
+
+    modal.setContent('<iframe id = "authIframe"src="'  +  url + '" scrolling="yes" ></iframe>');
     modal.open();
 }
 
-function updateEmail(){
-var customEmail = $("#customEmailAddress").val();
-var customName = $("#customName").val();
- $.ajax({
-      url: "'. plugins_url( 'emailaddress.php', __FILE__ ). '", //window.location points to the current url. change is needed.
+function updateEmail(phpfileaddress){
+var customEmail = jQuery("#customEmailAddress").val();
+var customName = jQuery("#customName").val();
+ jQuery.ajax({
+      url: phpfileaddress, //window.location points to the current url. change is needed.
       type: "POST",
       data: {
         custom_email_address: customEmail,
