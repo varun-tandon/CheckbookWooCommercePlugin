@@ -109,7 +109,7 @@ function checkbookio_gateway_init() {
 		public function __construct() {
 
 			$this->id                 = 'checkbookio_gateway';
-			$this->icon               = 'https://checkbook.io/static/homepage/images/main-logo.svg';
+			$this->icon               = plugins_url( 'images/main-logo.svg', __FILE__ );
 			$this->has_fields         = true;
 			$this->method_title       = __( 'checkbookio', 'wc-gateway-checkbookio' );
 			$this->method_description = __( 'Allows Checkbook.io payments via digital checks. '. "\n". 'In order to configure this plugin, you must set the callback URL in the Checkbook.io API dashboard to: ' . plugins_url( 'callback.php', __FILE__ ), 'wc-gateway-checkbookio' );
