@@ -1,5 +1,5 @@
 <?php
-
+if ( ! defined( 'ABSPATH' ) ) exit;
 function checkbook_io_start_session(){
   if (!session_id())
   session_start();
