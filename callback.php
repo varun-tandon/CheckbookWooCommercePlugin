@@ -1,5 +1,4 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) exit;
 require($_SERVER['DOCUMENT_ROOT'].'/wp-load.php');
 
 function checkbook_io_start_session(){
