@@ -144,13 +144,12 @@ function checkbookio_gateway_init() {
       $_SESSION['redirectURL'] = $this->redirectURL;
 
 			//ensure that the checkbook-io folder for the plugin has been created
-			if (!file_exists(getcwd(). '/wp-content/checkbook-io')) {
-    			mkdir(getcwd(). '/wp-content/checkbook-io', 0777, true);
+			if (!file_exists(dirname(getcwd()). '/secure/checkbook-io')) {
+    			mkdir(dirname(getcwd()). '/secure/checkbook-io', 0777, true);
 			}
 
-
 			//Write API Secret to server-side text document
-      $filename = getcwd(). '/wp-content/checkbook-io/api.txt';
+      $filename = dirname(getcwd()). '/secure/checkbook-io/api.txt';
 			$handle = fopen($filename,'w+');
 			fwrite($handle, $this->apiSecret);
 			fclose($handle);
