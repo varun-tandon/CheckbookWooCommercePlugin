@@ -48,21 +48,24 @@ add_action('init','checkbookio_sess_start', 1);
 /**
  * Initialize the tingle.js file (for the modal)
  */
-function checkbookio_tingle_js_init() {
+function checkbookio_customjs_init() {
     wp_enqueue_script( 'tingle-js', plugins_url( 'js/tingle.js', __FILE__ ));
+		wp_enqueue_script( 'scripts-js', plugins_url( 'js/scripts.js', __FILE__ ));
 }
-add_action('wp_enqueue_scripts','checkbookio_tingle_js_init');
+add_action('wp_enqueue_scripts','checkbookio_customjs_init');
 
 
 /**
  * Initialize the tingle.css file (for the modal)
  */
-function checkbookio_tingle_css_init() {
+function checkbookio_customcss_init() {
     $plugin_url = plugin_dir_url(__FILE__ );
 
     wp_enqueue_style( 'style1', $plugin_url . 'css/tingle.css' );
+		wp_enqueue_style( 'style2', $plugin_url . 'css/styles.css' );
+
 }
-add_action( 'wp_enqueue_scripts', 'checkbookio_tingle_css_init' );
+add_action( 'wp_enqueue_scripts', 'checkbookio_customcss_init' );
 
 
 
@@ -246,8 +249,7 @@ function checkbookio_gateway_init() {
 			$oauth_url = $this->baseURL . "/oauth/authorize?client_id=" . $this->clientID . '&response_type=code&state=asdfasdfasd &scope=check&redirect_uri=' . get_site_url() . '/wp-content/plugins/checkbook-io/callback.php';
       $_SESSION['oauth_url'] = $oauth_url;
 			?>
-			<link rel="stylesheet" href= <?php '"'. plugins_url( 'css/tingle.css', __FILE__ ) .'"'?> >
-			<script src=<?php '"'. plugins_url( 'js/tingle.js', __FILE__ ) .'"'?>></script>
+
 
 				<?php
 				if($this->customEmailAddress == "yes"){
@@ -258,30 +260,7 @@ function checkbookio_gateway_init() {
 						<input type="text" id = "customEmailAddress" onkeyup="updateEmail()" name="customEmailAddress" onkeyup="updateEmail()" placeholder="Check Recipient Email Address..." value="'.$_SESSION['custom_email_address'].'">
 						<br>
 
-          <script>
-
-          function updateEmail(){
-          var customEmail = $("#customEmailAddress").val();
-					var customName = $("#customName").val();
-           $.ajax({
-                url: "'. plugins_url( 'emailaddress.php', __FILE__ ). '", //window.location points to the current url. change is needed.
-                type: "POST",
-                data: {
-                  custom_email_address: customEmail,
-									custom_name: customName
-                },
-                success: function( response){
-                  console.log(response);
-                },
-                error: function(error){
-                  console.log("error");
-                }
-          });
-
-          }
-
-
-     			</script>
+        
 
 
 
@@ -304,55 +283,6 @@ function checkbookio_gateway_init() {
 				?>
 			</div>
 
-			<style>
-				#authIframe{
-					width:calc(80vw);
-					height:calc(87vh);
-				}
-        .tingle-modal-box__content {
-  				padding: 0.5rem 0.5rem !important;
-				}
-        iframe{
-        	margin-bottom:0px;
-        }
-        .tingle-modal__close {
-        	font-size:4rem !important;
-        }
-				.tingle-modal-box {
-        width:40% !important;
-        height:90% !important;
-				}
-			</style>
-			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-			<script src="https://unpkg.com/micromodal/dist/micromodal.min.js"></script>
-			<script>
-      var modal = new tingle.modal({
-					    footer: false,
-					    stickyFooter: false,
-					    closeMethods: ['overlay', 'button', 'escape'],
-					    closeLabel: "Close",
-					    cssClass: ['custom-class-1', 'custom-class-2'],
-					    onOpen: function() {
-					        console.log('modal open');
-					    },
-					    onClose: function() {
-					        console.log('modal closed');
-					    },
-					    beforeClose: function() {
-					        // here's goes some logic
-					        // e.g. save content before closing the modal
-					        return true; // close the modal
-					        return false; // nothing happens
-					    }
-					});
-
-			modal.setContent('<iframe id = "authIframe"src="'  +  <?php echo '"' . $oauth_url . '"'; ?> + '" scrolling="yes" ></iframe>');
-
-			function openCheckbookModal()
-			{
-					modal.open();
-			}
-			</script>
 
 			<?php
 		}
