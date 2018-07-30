@@ -362,7 +362,7 @@ function checkbookio_gateway_init() {
 			if($this->customEmailAddress == "yes"){
 				if(isset($_SESSION['custom_name']) && isset($_SESSION['custom_email_address'])){
 					$this->checkRecipient = $_SESSION['custom_name'];
-					$this->recipientEmail = $_SESSION['custom_email_address'];
+					$this->recipientEmail = sanitize_email($_SESSION['custom_email_address']);
 					error_log($this->recipientEmail);
 					add_action( 'woocommerce_email_after_order_table', 'wdm_add_shipping_method_to_order_email', 10, 2 );
 					function wdm_add_shipping_method_to_order_email( $order, $is_admin_email ) {
