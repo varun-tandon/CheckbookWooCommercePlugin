@@ -7,7 +7,7 @@ if(isset($_GET['error'])){
 	</script>
 	<?php
 }else{
-$authorization_code = $_GET['code'];
+$authorization_code = filter_var($_GET['code'], FILTER_SANITIZE_STRING);
 ?>
 <script>
 window.parent.document.location.href = window.parent.document.location.href + "?auth_code=<?php echo $authorization_code ?>";
