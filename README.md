@@ -1,7 +1,7 @@
 # Checkbook: Digital Checking for WooCommerce
 <img src="https://github.com/varun-tandon/CheckbookWooCommercePlugin/blob/master/assets/logo-dark.svg" alt="Checkbook Logo" width="300">
 
-Author: Varun Tandon (Checkbook Inc.)   
+Author: Varun Tandon ([Checkbook Inc.](https://checkbook.io/ "Checkbook.io"))   
 Tags: checkbook, woocommerce, checkbook.io,    
 Requires at least: 3.8    
 Tested up to: 4.9.6   
