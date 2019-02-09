@@ -1,11 +1,18 @@
 # Checkbook: Digital Checking for WooCommerce
-Author: Varun Tandon (Checkbook Inc.)
-Tags: checkbook, woocommerce, checkbook.io,
+Author: Varun Tandon (Checkbook Inc.) 
+
+Tags: checkbook, woocommerce, checkbook.io, 
+
 Requires at least: 3.8
+
 Tested up to: 4.9.6
+
 Stable tag: trunk
+
 Requires PHP: 5.2.4
+
 License: GPLv2 or later
+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 This plugin enables Checkbook.io Payments through WooCommerce.
