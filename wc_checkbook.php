@@ -20,64 +20,58 @@ if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins',
 
 
 /**
- * Add the gateway to WC Available Gateways
- *
- * @since 1.0.0
- * @param array $gateways all available WC gateways
- * @return array $gateways all WC gateways + checkbookio gateway
- */
+* Add the gateway to WC Available Gateways
+*
+* @since 1.0.0
+* @param array $gateways all available WC gateways
+* @return array $gateways all WC gateways + checkbookio gateway
+*/
 function checkbookio_add_to_gateways( $gateways ) {
 	$gateways[] = 'WC_Gateway_Checkbook';
 	return $gateways;
 }
 add_filter( 'woocommerce_payment_gateways', 'checkbookio_add_to_gateways' );
 
-
-
-/**
- * Ensure that the session has started
- */
-function checkbookio_sess_start() {
-    if (!session_id())
-    session_start();
-
+function checkbookio_add_query_vars_filter( $vars ) {
+	$vars[] = "auth_code";
+	return $vars;
 }
-add_action('init','checkbookio_sess_start', 1);
+add_filter( 'query_vars', 'checkbookio_add_query_vars_filter' );
+
 
 
 /**
- * Initialize the tingle.js file (for the modal)
- */
+* Initialize the tingle.js file (for the modal)
+*/
 function checkbookio_customjs_init() {
-  	wp_enqueue_script("jquery");
-    wp_enqueue_script( 'tingle-js', plugins_url( 'js/tingle.js', __FILE__ ));
-		wp_enqueue_script( 'scripts-js', plugins_url( 'js/scripts.js', __FILE__ ), array( 'jquery' ), '', true );
+	wp_enqueue_script("jquery");
+	wp_enqueue_script( 'tingle-js', plugins_url( 'js/tingle.js', __FILE__ ));
+	wp_enqueue_script( 'scripts-js', plugins_url( 'js/scripts.js', __FILE__ ), array( 'jquery' ), '', true );
 }
 add_action('wp_enqueue_scripts','checkbookio_customjs_init');
 
 
 /**
- * Initialize the tingle.css file (for the modal)
- */
+* Initialize the tingle.css file (for the modal)
+*/
 function checkbookio_customcss_init() {
-    $plugin_url = plugin_dir_url(__FILE__ );
+	$plugin_url = plugin_dir_url(__FILE__ );
 
-    wp_enqueue_style( 'style1', $plugin_url . 'css/tingle.css' );
-		wp_enqueue_style( 'style2', $plugin_url . 'css/styles.css' );
+	wp_enqueue_style( 'style1', $plugin_url . 'css/tingle.css' );
+	wp_enqueue_style( 'style2', $plugin_url . 'css/styles.css' );
 
 }
 add_action( 'wp_enqueue_scripts', 'checkbookio_customcss_init' );
 
 
 
-
 /**
- * Adds plugin page links
- *
- * @since 1.0.0
- * @param array $links all plugin links
- * @return array $links all plugin links + our custom links (i.e., "Settings")
- */
+* Adds plugin page links
+*
+* @since 1.0.0
+* @param array $links all plugin links
+* @return array $links all plugin links + our custom links (i.e., "Settings")
+*/
 function checkbookio_gateway_plugin_links( $links ) {
 
 	$plugin_links = array(
@@ -89,17 +83,15 @@ function checkbookio_gateway_plugin_links( $links ) {
 add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'checkbookio_gateway_plugin_links' );
 
 /**
- * checkbookio Payment Gateway
- *
- * Provides an checkbookio Payment Gateway; mainly for testing purposes.
- * We load it later to ensure WC is loaded first since we're extending it.
- *
- * @class 		WC_Gateway_Checkbook
- * @extends		WC_Payment_Gateway
- * @version		1.0.0
- * @package		WooCommerce/Classes/Payment
- * @author 		SkyVerge
- */
+* Checkbook.io Payment Gateway
+*
+*
+* @class 		WC_Gateway_Checkbook
+* @extends		WC_Payment_Gateway
+* @version		1.0.0
+* @package		WooCommerce/Classes/Payment
+* @author 		Checkbook.io
+*/
 add_action( 'plugins_loaded', 'checkbookio_gateway_init', 11 );
 
 
@@ -108,10 +100,10 @@ function checkbookio_gateway_init() {
 	class WC_Gateway_Checkbook extends WC_Payment_Gateway {
 
 		/**
-		 * Constructor for the gateway.
-		 */
+		* Constructor for the gateway.
+		*/
 		public function __construct() {
-
+			session_start();
 			$this->id                 = 'checkbookio_gateway';
 			$this->icon               = plugins_url( 'images/main-logo.svg', __FILE__ );
 			$this->has_fields         = true;
@@ -125,12 +117,12 @@ function checkbookio_gateway_init() {
 			// Define user set variables
 			$this->title        = $this->get_option( 'title' );
 			$this->clientID     = $this->get_option('clientID');
-		  $this->checkRecipient = $this->get_option('checkRecipient');
-		  $this->recipientEmail = $this->get_option('recipientEmail');
+			$this->checkRecipient = $this->get_option('checkRecipient');
+			$this->recipientEmail = $this->get_option('recipientEmail');
 			$this->apiSecret = $this->get_option('secretKey');
-      $this->redirectURL = plugins_url( 'callback.php', __FILE__ );
+			$this->redirectURL = plugins_url( 'callback.php', __FILE__ );
 			$this->sandbox = $this->get_option('sandbox');
-			$this->customEmailAddress = $this->get_option('customEmailAddress');
+			// $this->customEmailAddress = $this->get_option('customEmailAddress');
 			$this->baseURL = 'https://checkbook.io';
 			if($this->sandbox == "yes"){
 				$this->baseURL = 'https://sandbox.checkbook.io';
@@ -140,41 +132,16 @@ function checkbookio_gateway_init() {
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 
 
-		  	// debug_to_console( "completed init" );
-		  	// debug_to_console($this->clientID);
-
-			$_SESSION['clientID'] = $this->clientID;
-      $_SESSION['redirectURL'] = $this->redirectURL;
-
-			//ensure that the checkbook-io folder for the plugin has been created
-			if (!file_exists(dirname(getcwd()). '/secure/checkbook-io')) {
-    			mkdir(dirname(getcwd()). '/secure/checkbook-io', 0777, true);
+			if(isset($_GET['auth_code'])){
+				$_SESSION['auth_code'] = get_query_var('auth_code');
 			}
-
-			//Write API Secret to server-side text document
-      $filename = dirname(getcwd()). '/secure/checkbook-io/api.txt';
-			$handle = fopen($filename,'w+');
-			fwrite($handle, $this->apiSecret);
-			fclose($handle);
-
-			//Write baseURL (sandbox.checkbook or just checkbook) to a text document
-		 	$filename = getcwd(). '/wp-content/checkbook-io/baseURL.txt';
-			$handle = fopen($filename,'w+');
-			fwrite($handle, $this->baseURL);
-			fclose($handle);
-
-
-
-
-
-
 		}
 
 
 
 		/**
-		 * Initialize Gateway Settings Form Fields
-		 */
+		* Initialize Gateway Settings Form Fields
+		*/
 		public function init_form_fields() {
 
 			$this->form_fields = apply_filters( 'wc_checkbookio_form_fields', array(
@@ -191,12 +158,12 @@ function checkbookio_gateway_init() {
 					'label'   => __( 'Use Checkbook in Sandbox mode', 'wc-gateway-checkbookio' ),
 					'default' => 'no'
 				),
-				'customEmailAddress' => array(
-					'title'   => __( 'Allow User To Input Recipient', 'wc-gateway-checkbookio' ),
-					'type'    => 'checkbox',
-					'label'   => __( 'Allow the user to input the recipient of the check. This will add a form field for the user to place a custom email address.', 'wc-gateway-checkbookio' ),
-					'default' => 'no'
-				),
+				// 'customEmailAddress' => array(
+				// 	'title'   => __( 'Allow User To Input Recipient', 'wc-gateway-checkbookio' ),
+				// 	'type'    => 'checkbox',
+				// 	'label'   => __( 'Allow the user to input the recipient of the check. This will add a form field for the user to place a custom email address.', 'wc-gateway-checkbookio' ),
+				// 	'default' => 'no'
+				// ),
 				'title' => array(
 					'title'       => __( 'Title', 'wc-gateway-checkbookio' ),
 					'type'        => 'text',
@@ -232,7 +199,7 @@ function checkbookio_gateway_init() {
 					'default'     => '',
 					'desc_tip'    => true,
 				),
-        'redirectURL' => array(
+				'redirectURL' => array(
 					'title'       => __( 'Redirect URL (This value should not be changed, and should be set as the redirect URL in the Checkbook API Dashboard.)', 'wc-gateway-checkbookio' ),
 					'type'        => 'text',
 					'description' => __( 'This value should not be changed.', 'wc-gateway-checkbookio' ),
@@ -243,36 +210,25 @@ function checkbookio_gateway_init() {
 		}
 
 		/**
-		 * Create the UI for the payment fields. In this case the only payment field is the button to authenticate.
-		 */
+		* Create the UI for the payment fields. In this case the only payment field is the button to authenticate.
+		*/
 		public function payment_fields()
 		{
-			$oauth_url = $this->baseURL . "/oauth/authorize?client_id=" . $this->clientID . '&response_type=code&state=asdfasdfasd &scope=check&redirect_uri=' . get_site_url() . '/wp-content/plugins/checkbook-io/callback.php';
-      $_SESSION['oauth_url'] = $oauth_url;
+
+			$oauth_url = $this->baseURL . "/oauth/authorize?client_id=" . $this->clientID . '&response_type=code&state=asdfasdfasd&scope=check&redirect_uri=' . $this->redirectURL;
+
+			// Deprecated Custom Email Address Code
+			// if($this->customEmailAddress == "yes"){
+			// 	echo '
+			// 	<input type="text" id = "customName" name="customName" onkeyup="updateEmail(\''. plugins_url( 'emailaddress.php', __FILE__ ) .'\')"placeholder="Check Recipient Name..." value="'.$_SESSION['custom_name'].'">
+			// 	<br>
+			// 	<input type="text" id = "customEmailAddress" onkeyup="updateEmail(\''. plugins_url( 'emailaddress.php', __FILE__ ) .'\')" name="customEmailAddress" onkeyup="updateEmail(\'' . plugins_url( 'emailaddress.php', __FILE__ ).'\')" placeholder="Check Recipient Email Address..." value="'.sanitize_email($_SESSION['custom_email_address']).'">
+			// 	<br>';
+			// }
 			?>
-
-
+			<div id="txtHint">
 				<?php
-				if($this->customEmailAddress == "yes"){
-					echo '
-						<input type="text" id = "customName" name="customName" onkeyup="updateEmail(\''. plugins_url( 'emailaddress.php', __FILE__ ) .'\')"placeholder="Check Recipient Name..." value="'.$_SESSION['custom_name'].'">
-						<br>
-						<input type="text" id = "customEmailAddress" onkeyup="updateEmail(\''. plugins_url( 'emailaddress.php', __FILE__ ) .'\')" name="customEmailAddress" onkeyup="updateEmail(\'' . plugins_url( 'emailaddress.php', __FILE__ ).'\')" placeholder="Check Recipient Email Address..." value="'.$_SESSION['custom_email_address'].'">
-						<br>
-
-
-
-
-
-
-
-					';
-				}
-
-				?>
-				<div id="txtHint">
-				<?php
-				if($_SESSION['authorized'] == "true")
+				if(!$_SESSION['auth_code'] == NULL)
 				{
 					echo '<p style="color:green;"> Authorization complete. You are now ready to make a payment via Checkbook. </p>';
 				}
@@ -289,182 +245,111 @@ function checkbookio_gateway_init() {
 
 		public function validate_fields()
 		{
-      if(!$_SESSION['authorized'] == "true")
+			if($_SESSION['auth_code'] == NULL)
 			{
-        wc_add_notice(  'Please press "Pay with Checkbook" to authorize payments. ', 'error' );
-        return false;
-      }
+				wc_add_notice(  'Please press "Pay with Checkbook" to authorize payments. ', 'error' );
+				return false;
+			}
 			else
 			{
-        return true;
-      }
-    }
-
-		// public function email_instructions( $order, $sent_to_admin, $plain_text = false ) {
-		//
-		//         echo "<h1> Hello this is a test </h1>";
-		//
-		// }
-
+				return true;
+			}
+		}
 
 		/**
-		 * Process the payment and return the result
-		 *
-		 * @param int $order_id
-		 * @return array
-		 */
+		* Process the payment and return the result
+		*
+		* @param int $order_id
+		* @return array
+		*/
 		public function process_payment( $order_id ) {
 			$order = wc_get_order( $order_id );
 
+			$data = "client_id=". $this->clientID ."&grant_type=authorization_code&scope=check&code=".$_SESSION['auth_code']."&redirect_uri=".$this->redirectURL."&client_secret=". $this->apiSecret;
+			$response = wp_remote_post( $this->baseURL . "/oauth/token", array(
+				'method' => 'POST',
+				'timeout' => 30,
+				'redirection' => 10,
+				'httpversion' => '1.1',
+				'blocking' => true,
+				'headers' => array(
+					'Content-Type' => 'application/x-www-form-urlencoded'
+				),
+				'body' => $data,
+				'cookies' => array()
+			)
+		);
 
-			// $order->add_order_note("Hello this is a test. Thank you.");
-			//Submit the POST of the digital check
-
-			// $response = wp_remote_post( $this->baseURL . "/v3/check/digital", array(
-			// 	'method' => 'POST',
-			// 	'timeout' => 45,
-			// 	'redirection' => 5,
-			// 	'httpversion' => '1.1',
-			// 	'blocking' => true,
-			// 	'headers' => array(
-			// 	   	"Authorization: Bearer " . $_SESSION['bearerToken'] ."",
-			// 	     "Cache-Control: no-cache",
-			// 	     "Content-Type: application/json",
-			// 	   ),
-			// 	'body' => "{\n\t\"name\":\"". $this->checkRecipient .".\",\n\t\"recipient\":\"". $this->recipientEmail ."\", \n\t\"amount\": ". $order->get_data()['total'] . "\n}",
-			// 	'cookies' => array()
-			//     )
-			// );
-			// if ( is_wp_error( $response ) ) {
-			//    $error_message = $response->get_error_message();
-			//    echo "Something went wrong: $error_message";
-			// } else {
-			// 	if(array_key_exists('id', $response['response']))
-			// 	{
-			// 		 $order->update_status( 'complete', __( 'Order Complete.', 'wc-gateway-checkbookio' ) );
-			// 		 WC()->cart->empty_cart();
-			// 		 session_destroy();
-			// 		 return array(
-			// 			 'result' 	=> 'success',
-			// 			 'redirect'	=> $this->get_return_url($order)
-			// 		 );
-			// 	}
-			// 	else
-			// 	{
-			// 	 //There was an issue that resulted in the payment failing. Prevent the site from registering this as a compelted transaction.
-			// 	 session_destroy();
-			// 	 wc_add_notice( __('Payment error: Something went wrong. Please refresh the page and try again. (Error: ' . json_decode($response, true)['error']. ')', 'checkbook') . $error_message, 'error' );
-			// 	 return;
-			// 	}
-			// }
-
-
-			if($this->customEmailAddress == "yes"){
-				if(isset($_SESSION['custom_name']) && isset($_SESSION['custom_email_address'])){
-					$this->checkRecipient = $_SESSION['custom_name'];
-					$this->recipientEmail = sanitize_email($_SESSION['custom_email_address']);
-					error_log($this->recipientEmail);
-					add_action( 'woocommerce_email_after_order_table', 'wdm_add_shipping_method_to_order_email', 10, 2 );
-					function wdm_add_shipping_method_to_order_email( $order, $is_admin_email ) {
-							echo '<p><h1>Check Recipient Details:</h1><h4> Name: '  . $_SESSION['custom_name'].'  </h4><h4> Email: '. $_SESSION['custom_email_address'] .' </h4> </p>';
-					}
-				}else{
-          wc_add_notice('Payment error: Please enter a check recipient name and email address.', 'error');
-          return;
-				}
-			}
-
-				$argdata = (array(
-							'name' => $this->checkRecipient,
-							'recipient' => $this->recipientEmail,
-							'amount' => (float)$order->get_data()['total']
-						));
-				$data = json_encode($argdata);
-				$response = wp_remote_post( $this->baseURL . "/v3/check/digital", array(
-					'method' => 'POST',
-					'timeout' => 30,
-					'redirection' => 10,
-					'httpversion' => '1.1',
-					'blocking' => true,
-					'headers' => array(
-								'Authorization' => 'Bearer ' . $_SESSION['bearerToken'],
-								'Cache-Control' => 'no-cache',
-								'Content-Type' => 'application/json',
-							),
-					'body' => $data,
-					'cookies' => array()
-				)
-			);
-
-			if ( is_wp_error( $response ) ) {
-				$error_message = $response->get_error_message();
-				echo "Something went wrong: $error_message";
-			} else {
-				$response = $response['body'];
-				if(array_key_exists('id', json_decode($response, true)))
-				{
-					 $order->update_status( 'completed', __( 'Order Complete.', 'wc-gateway-checkbookio' ) );
-					 WC()->cart->empty_cart();
-					 session_destroy();
-					 return array(
-						 'result' 	=> 'success',
-						 'redirect'	=> $this->get_return_url($order)
-					 );
-				}
-				else
-				{
-				 //There was an issue that resulted in the payment failing. Prevent the site from registering this as a compelted transaction.
-				 session_destroy();
-				 wc_add_notice( __('Payment error: Something went wrong. Please refresh the page and try again. (Error: ' . json_decode($response, true)['error']. ')', 'checkbook') . $error_message, 'error' );
-				 return;
-				}
-			}
-
-
-			// $curl = curl_init();
-			// curl_setopt_array($curl, array(
-			//   CURLOPT_URL => $this->baseURL . "/v3/check/digital",
-			//   CURLOPT_RETURNTRANSFER => true,
-			//   CURLOPT_ENCODING => "",
-			//   CURLOPT_MAXREDIRS => 10,
-			//   CURLOPT_TIMEOUT => 30,
-			//   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-			//   CURLOPT_CUSTOMREQUEST => "POST",
-			//   CURLOPT_POSTFIELDS => "{\n\t\"name\":\"". $this->checkRecipient .".\",\n\t\"recipient\":\"". $this->recipientEmail ."\", \n\t\"amount\": ". $order->get_data()['total'] . "\n}",
-			//   CURLOPT_HTTPHEADER => array(
-			//   	"Authorization: Bearer " . $_SESSION['bearerToken'] ."",
-			//     "Cache-Control: no-cache",
-			//     "Content-Type: application/json",
-			//   ),
-			// ));
-			// $response = curl_exec($curl);
-			// $err = curl_error($curl);
-			// curl_close($curl);
-			// if ($err)
-			// {
-			//   error_log("cURL Error #:" . $err);
-			// } else
-			// {
-			// 	 //Now that the post is complete...
-			//    error_log($response);
-      //    if(array_key_exists('id', json_decode($response, true)))
-			// 	 {
-			// 		 	$order->update_status( 'completed', __( 'Order Complete.', 'wc-gateway-checkbookio' ) );
-			// 			WC()->cart->empty_cart();
-			//       session_destroy();
-			// 			return array(
-			// 				'result' 	=> 'success',
-			// 				'redirect'	=> $this->get_return_url($order)
-			// 			);
-      //    }
-			// 	 else
-			// 	 {
-			// 		//There was an issue that resulted in the payment failing. Prevent the site from registering this as a compelted transaction.
-      //     session_destroy();
-      //     wc_add_notice( __('Payment error: Something went wrong. Please refresh the page and try again. (Error: ' . json_decode($response, true)['error']. ')', 'checkbook') . $error_message, 'error' );
-      //     return;
-      //    }
-			// }
+		if ( is_wp_error( $response ) ) {
+			$error_message = $response->get_error_message();
+			echo "Something went wrong: $error_message";
+		}else{
+			$response = $response['body'];
+			$formattedData = json_decode($response, true);
+			error_log(print_r($response, true));
+			$bearerToken = $formattedData['access_token'];
 		}
-  }
+
+		// Deprecated Custom Email Address code
+		// if($this->customEmailAddress == "yes"){
+		// 	if(isset($_SESSION['custom_name']) && isset($_SESSION['custom_email_address'])){
+		// 		$this->checkRecipient = $_SESSION['custom_name'];
+		// 		$this->recipientEmail = sanitize_email($_SESSION['custom_email_address']);
+		// 		add_action( 'woocommerce_email_after_order_table', 'wdm_add_shipping_method_to_order_email', 10, 2 );
+		// 		function wdm_add_shipping_method_to_order_email( $order, $is_admin_email ) {
+		// 			echo '<p><h1>Check Recipient Details:</h1><h4> Name: '  . $_SESSION['custom_name'].'  </h4><h4> Email: '. sanitize_email($_SESSION['custom_email_address']) .' </h4> </p>';
+		// 		}
+		// 	}else{
+		// 		wc_add_notice('Payment error: Please enter a check recipient name and email address.', 'error');
+		// 		return;
+		// 	}
+		// }
+
+		$argdata = (array(
+			'name' => $this->checkRecipient,
+			'recipient' => $this->recipientEmail,
+			'amount' => (float)$order->get_data()['total']
+		));
+		$data = json_encode($argdata);
+		$response = wp_remote_post( $this->baseURL . "/v3/check/digital", array(
+			'method' => 'POST',
+			'timeout' => 30,
+			'redirection' => 10,
+			'httpversion' => '1.1',
+			'blocking' => true,
+			'headers' => array(
+				'Authorization' => 'Bearer ' . $bearerToken,
+				'Cache-Control' => 'no-cache',
+				'Content-Type' => 'application/json',
+			),
+			'body' => $data,
+			'cookies' => array()
+		)
+	);
+
+	if ( is_wp_error( $response ) ) {
+		$error_message = $response->get_error_message();
+		echo "Something went wrong: $error_message";
+	} else {
+		$response = $response['body'];
+		if(array_key_exists('id', json_decode($response, true)))
+		{
+			$order->update_status( 'completed', __( 'Order Complete.', 'wc-gateway-checkbookio' ) );
+			WC()->cart->empty_cart();
+			session_destroy();
+			return array(
+				'result' 	=> 'success',
+				'redirect'	=> $this->get_return_url($order)
+			);
+		}
+		else
+		{
+			//There was an issue that resulted in the payment failing. Prevent the site from registering this as a compelted transaction.
+			session_destroy();
+			wc_add_notice( __('Payment error: Something went wrong. Please refresh the page and try again. (Error: ' . json_decode($response, true)['error']. ')', 'checkbook') . $error_message, 'error' );
+			return;
+		}
+	}
+}
+}
 }

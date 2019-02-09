@@ -1,4 +1,4 @@
-=== WooCommerce Checkbook.io Payments ===
+=== Checkbook: Digital Checking for WooCommerce ===
 Contributors: checkbook
 Tags: checkbook, woocommerce, checkbook.io,
 Requires at least: 3.8
@@ -25,7 +25,7 @@ First you will need to setup your Checkbook.io account and receive your API cred
 
 Plugin Installation:
 
-1. Upload the plugin files to the `/wp-content/plugins/woocommerce-checkbook-io-plugin` directory, or install the plugin through the WordPress plugins screen directly.
+1. Install the plugin through the Wordpress.org Plugin Repository
 2. Activate the plugin through the 'Plugins' screen in WordPress
 3. Use the Configure screen to configure the plugin settings with your API Secret Key and Client ID.
 4. On the Configure screen, a default value for the Redirect URL will be filled in. Set this link as the Callback URL on the Checkbook Developer page.
