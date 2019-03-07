@@ -17,9 +17,9 @@ var modal = new tingle.modal({
 
 function openCheckbookModal(url)
 {
-
-  modal.setContent('<iframe id = "authIframe"src="'  +  url + '" scrolling="yes" ></iframe>');
-  modal.open();
+  document.location.href = url;
+  // modal.setContent('<iframe id = "authIframe"src="'  +  url + '" scrolling="yes" ></iframe>');
+  // modal.open();
 }
 
 function updateEmail(phpfileaddress){

@@ -33,7 +33,7 @@ function checkbookio_add_to_gateways( $gateways ) {
 add_filter( 'woocommerce_payment_gateways', 'checkbookio_add_to_gateways' );
 
 function checkbookio_add_query_vars_filter( $vars ) {
-	$vars[] = "auth_code";
+	$vars[] = "code";
 	return $vars;
 }
 add_filter( 'query_vars', 'checkbookio_add_query_vars_filter' );
@@ -105,7 +105,7 @@ function checkbookio_gateway_init() {
 		public function __construct() {
 			session_start();
 			$this->id                 = 'checkbookio_gateway';
-			$this->icon               = plugins_url( 'images/main-logo.svg', __FILE__ );
+			$this->icon               = plugins_url( 'images/main-logo.png', __FILE__ );
 			$this->has_fields         = true;
 			$this->method_title       = __( 'checkbookio', 'wc-gateway-checkbookio' );
 			$this->method_description = __( 'Allows Checkbook.io payments via digital checks. '. "\n". 'In order to configure this plugin, you must set the callback URL in the Checkbook.io API dashboard to: ' . plugins_url( 'callback.php', __FILE__ ), 'wc-gateway-checkbookio' );
@@ -120,7 +120,7 @@ function checkbookio_gateway_init() {
 			$this->checkRecipient = $this->get_option('checkRecipient');
 			$this->recipientEmail = $this->get_option('recipientEmail');
 			$this->apiSecret = $this->get_option('secretKey');
-			$this->redirectURL = plugins_url( 'callback.php', __FILE__ );
+			$this->redirectURL = $this->get_option('redirectURL');
 			$this->sandbox = $this->get_option('sandbox');
 			// $this->customEmailAddress = $this->get_option('customEmailAddress');
 			$this->baseURL = 'https://checkbook.io';
@@ -132,8 +132,8 @@ function checkbookio_gateway_init() {
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 
 
-			if(isset($_GET['auth_code'])){
-				$_SESSION['auth_code'] = get_query_var('auth_code');
+			if(isset($_GET['code'])){
+				$_SESSION['auth_code'] = get_query_var('code');
 			}
 		}
 
@@ -168,7 +168,7 @@ function checkbookio_gateway_init() {
 					'title'       => __( 'Title', 'wc-gateway-checkbookio' ),
 					'type'        => 'text',
 					'description' => __( 'This controls the title for the payment method the customer sees during checkout.', 'wc-gateway-checkbookio' ),
-					'default'     => __( 'Checkbook.io Payment', 'wc-gateway-checkbookio' ),
+					'default'     => __( 'Pay with Checkbook', 'wc-gateway-checkbookio' ),
 					'desc_tip'    => true,
 				),
 				'clientID' => array(
@@ -215,7 +215,7 @@ function checkbookio_gateway_init() {
 		public function payment_fields()
 		{
 
-			$oauth_url = $this->baseURL . "/oauth/authorize?client_id=" . $this->clientID . '&response_type=code&state=asdfasdfasd&scope=check&redirect_uri=' . $this->redirectURL;
+			$oauth_url = $this->baseURL . "/oauth/authorize?client_id=" . $this->clientID . '&response_type=code&scope=check&redirect_uri=' . $this->redirectURL;
 
 			// Deprecated Custom Email Address Code
 			// if($this->customEmailAddress == "yes"){
@@ -230,11 +230,12 @@ function checkbookio_gateway_init() {
 				<?php
 				if(!$_SESSION['auth_code'] == NULL)
 				{
-					echo '<p style="color:green;"> Authorization complete. You are now ready to make a payment via Checkbook. </p>';
+					echo '<p style="color:green;"> Authorization complete. You are now ready to make a payment via Checkbook. </p>
+								<p>  <u>	<a id="authenticatecheckbook" href="javascript:openCheckbookModal(\''. $oauth_url .'\')"> Sign In As Different User </a> </u> </p>';
 				}
 				else
 				{
-					echo ' <a id="authenticatecheckbook" href="javascript:openCheckbookModal(\''. $oauth_url .'\')"> Pay with Checkbook </a>';
+					echo '<u> <a id="authenticatecheckbook" href="javascript:openCheckbookModal(\''. $oauth_url .'\')"> Pay with Checkbook </a> </u>';
 				}
 				?>
 			</div>
