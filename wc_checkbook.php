@@ -3,13 +3,12 @@
 Plugin Name: Checkbook.io
 Plugin URI: www.checkbook.io
 Description: WooCommerce plugin for Checkbook.io payments
-Version: 0.0.2
+Version: 0.0.3
 Author: Checkbook.io
 Author URI: www.checkbook.io
 Text Domain: checkbook-io
 Domain Path: /languages
 */
-//One page 1
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
@@ -108,7 +107,9 @@ function checkbookio_gateway_init() {
 			$this->icon               = plugins_url( 'images/main-logo.png', __FILE__ );
 			$this->has_fields         = true;
 			$this->method_title       = __( 'checkbookio', 'wc-gateway-checkbookio' );
-			$this->method_description = __( 'Allows Checkbook.io payments via digital checks. '. "\n". 'In order to configure this plugin, you must set the callback URL in the Checkbook.io API dashboard to: ' . plugins_url( 'callback.php', __FILE__ ), 'wc-gateway-checkbookio' );
+			$this->method_description = __( 'Allows Checkbook.io payments via digital checks. '. "\n". 
+			'In order to configure this plugin, you must set the callback URL in the Checkbook.io API dashboard to the 
+			URL to your "Checkout" page.', 'wc-gateway-checkbookio' );
 
 			// Load the settings.
 			$this->init_form_fields();
@@ -200,7 +201,7 @@ function checkbookio_gateway_init() {
 					'desc_tip'    => true,
 				),
 				'redirectURL' => array(
-					'title'       => __( 'Redirect URL (This value should not be changed, and should be set as the redirect URL in the Checkbook API Dashboard.)', 'wc-gateway-checkbookio' ),
+					'title'       => __( 'Redirect URL (this must be the url to your Checkout page)', 'wc-gateway-checkbookio' ),
 					'type'        => 'text',
 					'description' => __( 'This value should not be changed.', 'wc-gateway-checkbookio' ),
 					'default'     => plugins_url( 'callback.php', __FILE__ ),

@@ -47,6 +47,9 @@ Please contact our support at [support@checkbook.io](mailto://support@checkbook.
 
 == Changelog ==
 
+= 0.0.3 =
+* Updated compatibility to work with Checkbook API v3
+
 = 0.0.2 =
 * Initial upload to Wordpress.org
 
